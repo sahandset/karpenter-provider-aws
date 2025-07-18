@@ -47,6 +47,12 @@ addons:
 - name: eks-pod-identity-agent
 EOF
 
+CLUSTER_SG_ID="$(aws eks describe-cluster --name "${CLUSTER_NAME}" \
+  --query "cluster.resourcesVpcConfig.clusterSecurityGroupId" --output text)"
+aws ec2 create-tags \
+  --resources "${CLUSTER_SG_ID}" \
+  --tags "Key=kubernetes.io/cluster/${CLUSTER_NAME},Value=owned"
+
 export CLUSTER_ENDPOINT="$(aws eks describe-cluster --name "${CLUSTER_NAME}" --query "cluster.endpoint" --output text)"
 export KARPENTER_IAM_ROLE_ARN="arn:${AWS_PARTITION}:iam::${AWS_ACCOUNT_ID}:role/${CLUSTER_NAME}-karpenter"
 
